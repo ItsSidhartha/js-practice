@@ -11,12 +11,14 @@ const testCase10 = "ZZZZZZ   LLLLLL"
 const testCase11 = " Z LL  ZL"
 const testCase12 = "   LLLLLL   Z"
 const testCase13 = "  L Z  ZZ  LL"
+const testCase14 = "   L    L"
+const testCase15 = "  Z   L Z"
 
 
-const testCaseToUse = testCase13;
-let indexOfCurrentTargetAnimal;
+const testCaseToUse = testCase15;
+let indexOfCurrentTargetAnimal = 0;
 let indexOfTestCase = 0;
-let currentTargetAnimal;
+let currentTargetAnimal = "";
 while (!currentTargetAnimal && indexOfTestCase < testCaseToUse.length) {
     if (testCaseToUse[indexOfTestCase] !== " ") {
         currentTargetAnimal = testCaseToUse[indexOfTestCase];
@@ -26,9 +28,8 @@ while (!currentTargetAnimal && indexOfTestCase < testCaseToUse.length) {
 }
 
 let minimumDistanceBetweenTwoAnimals = -1;
-let distanceBetweenTwoAnimals;
 
-for ( ; indexOfTestCase < testCaseToUse.length; indexOfTestCase++) {
+for (let distanceBetweenTwoAnimals = Infinity; indexOfTestCase < testCaseToUse.length; indexOfTestCase++) {
     if (testCaseToUse[indexOfTestCase] === currentTargetAnimal) {
         indexOfCurrentTargetAnimal = indexOfTestCase;
     } else if (testCaseToUse[indexOfTestCase] !== currentTargetAnimal && testCaseToUse[indexOfTestCase] !== " ") {
