@@ -8,14 +8,24 @@ const testCase7 = "Z   LL Z";
 const testCase8 = "ZZ L  Z";
 const testCase9 = "Z  LZZ LLZZ  LL   ZZ    L";
 const testCase10 = "ZZZZZZ   LLLLLL"
+const testCase11 = " Z LL  ZL"
+const testCase12 = "   LLLLLL   Z"
+const testCase13 = "  L Z  ZZ  LL"
 
-const testCaseToUse = testCase10;
-let minimumDistanceBetweenTwoAnimals = -1;
-let indexOfCurrentTargetAnimal ;
+
+const testCaseToUse = testCase13;
+let indexOfCurrentTargetAnimal;
 let indexOfTestCase = 0;
-let currentTargetAnimal = testCaseToUse[indexOfTestCase];
-indexOfCurrentTargetAnimal = indexOfTestCase;
-indexOfTestCase = indexOfTestCase + 1;
+let currentTargetAnimal;
+while (!currentTargetAnimal && indexOfTestCase < testCaseToUse.length) {
+    if (testCaseToUse[indexOfTestCase] !== " ") {
+        currentTargetAnimal = testCaseToUse[indexOfTestCase];
+        indexOfCurrentTargetAnimal = indexOfTestCase;
+    }
+    indexOfTestCase = indexOfTestCase + 1;
+}
+
+let minimumDistanceBetweenTwoAnimals = -1;
 let distanceBetweenTwoAnimals;
 
 for ( ; indexOfTestCase < testCaseToUse.length; indexOfTestCase++) {
