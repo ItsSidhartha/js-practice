@@ -1,15 +1,3 @@
-function isVowel(letter) {
-  const vowels = "aeiou";
-
-  for (let index = 0; index < vowels.length; index++) {
-    if (letter === vowels[index]) {
-      return true;
-    }
-  }
-
-  return -1;
-}
-
 function vowelsAt(string) {
   const vowels = "aeiou";
   let indicesOfVowels = "";
@@ -41,7 +29,7 @@ function calculateDistence(string) {
   let minDistance = Infinity;
 
   for (let index = indicesOfVowels.length - 1; index > 0; index--) {
-    const distance = indicesOfVowels[index] - indicesOfVowels[index - 1]  ;
+    const distance = indicesOfVowels[index] - indicesOfVowels[index - 1];
     
     if (distance < minDistance) {
       minDistance = distance;
