@@ -13,47 +13,6 @@ function min(a, b) {
   return a < b ? a : b;
 }
 
-/*function vowelsAt(string) {
-  const vowels = "aeiou";
-  let indicesOfVowels = "";
-
-  for (let stringIndex = 0; stringIndex < string.length; stringIndex++) {
-    let vowelIndex = 0;
-    let isVowel = false;
-
-    while (vowelIndex < vowels.length && !isVowel) {
-      if (string[stringIndex] === vowels[vowelIndex]) {
-        isVowel = true;
-        indicesOfVowels = indicesOfVowels + stringIndex;
-      }
-
-      vowelIndex++;
-    }
-  }
-  return indicesOfVowels;
-}
-
-function calculateMinDistence(string) {
-  const indicesOfVowels = vowelsAt(string);
-
-  if (indicesOfVowels.length <= 1) {
-    return -1;
-  }
-
-  let minDistance = Infinity;
-
-  for (let index = indicesOfVowels.length - 1; index > 0; index--) {
-    const distance = indicesOfVowels[index] - indicesOfVowels[index - 1];
-
-    if (distance < minDistance) {
-      minDistance = distance;
-    }
-
-  }
-  return minDistance;
-}
-*/
-
 function distanceBetweenTwoVowels(string) {
   let currVowelIndex = -1;
   let nextVowelIndex = -1;
