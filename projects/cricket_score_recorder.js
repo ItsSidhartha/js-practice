@@ -305,7 +305,7 @@ function takeOverInput() {
   return overs;
 }
 
-function main(args) {
+function main() {
   const team1 = prompt("Team Batting first  -  ");
   const team2 = prompt("Team bowling first  -  ");
   const teams = [team1, team2];
@@ -364,4 +364,4 @@ function main(args) {
   }
 }
 
-main(Deno.args);
+main();
