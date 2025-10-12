@@ -5,7 +5,7 @@ let target = 0;
 let isSecondInning = false;
 let inning = 0
 
-function createCommonMsg(MAX_OVER, teams, score, scoreByOver, allBatterStats, strikerIndex, nonStrikerindex, bowlers, currBowlerIndex, allBowlerStats, allBatters) {
+function createCommonMsg(maxOver, teams, score, scoreByOver, allBatterStats, strikerIndex, nonStrikerindex, bowlers, currBowlerIndex, allBowlerStats, allBatters) {
   const battingTeam = teams[inning];
   const bowlingTeam = teams[Math.abs(inning - 1)];
   const strikerName = allBatters[inning][strikerIndex];
@@ -19,7 +19,7 @@ function createCommonMsg(MAX_OVER, teams, score, scoreByOver, allBatterStats, st
   const overs = score[inning][2];
   const balls = score[inning][3];
   const neededRunsToWin = target - runsScored;
-  const ballsRemaining = (MAX_OVER * 6) - ((overs * 6) + balls);
+  const ballsRemaining = (maxOver * 6) - ((overs * 6) + balls);
   const requiredRunsMsg = `need ${neededRunsToWin} in ${ballsRemaining} balls to win`;
   const battingMsg = `
   ${battingTeam}   ${runsScored}/${wicketsFallen} (${overs}.${balls})   ${isSecondInning ? `'Target' - ${target}` : ''}
@@ -195,10 +195,10 @@ function getStartingBattersAndBowlers(allBatterStats, allBowlerStats, bowlers, a
   getNewBowler(bowlers, allBowlerStats);
 }
 
-function InningBreakMeasage(battingTeam, runsScored, wicketsFallen, overs, balls, bowlingTeam, MAX_OVER) {
+function InningBreakMeasage(battingTeam, runsScored, wicketsFallen, overs, balls, bowlingTeam, maxOver) {
   const Msg = `
    ${battingTeam}   ${runsScored}/${wicketsFallen} (${overs}.${balls})
-   ${bowlingTeam} needs ${target} in ${MAX_OVER * 6} balls to win
+   ${bowlingTeam} needs ${target} in ${maxOver * 6} balls to win
   `
   console.log(Msg)
 }
@@ -215,9 +215,9 @@ function endMeasage(teams, scoreOfTeam1, scoreOfTeam2, resultMsg) {
   console.log(msg);
 }
 
-function endOfOverMeasage(score, MAX_OVER, teams, allBatterStats) {
+function endOfOverMeasage(score, maxOver, teams, allBatterStats) {
   const neededRunsToWin = target - score[1][0];
-  const ballsRemaining = (MAX_OVER * 6) - ((score[1][2] * 6) + score[1][3]);
+  const ballsRemaining = (maxOver * 6) - ((score[1][2] * 6) + score[1][3]);
   const requiredRunsMsg = `need ${neededRunsToWin} in ${ballsRemaining} balls to win`;
   const battingTeam = teams[Math.abs(inning - 1)];
   const runsScored = score[inning][0];
@@ -242,56 +242,75 @@ function endOfOverMeasage(score, MAX_OVER, teams, allBatterStats) {
 `
 }
 
-function getBattingDataInString(allBatters,allBatterStats, inning) {
+function strikeRate(runs, balls) {
+  if (balls === 0) {
+    return 0;
+  }
+  
+  return Math.round(((runs / balls) * 100));
+}
+
+function getBattingDataInString(allBatters, allBatterStats, inning) {
   let dataAsString = '';
-  for (let index = 0; index < allBatters.length; index++) {
-    dataAsString += `\t${allBatters[inning][index]} - ${allBatterStats[inning][index][0]}(${allBatterStats[inning][index][1]})  ${Math.round((allBatterStats[inning][index][0]/allBatterStats[inning][index][1]) * 100)} - ${allBatterStats[inning][index][2]} - ${allBatterStats[inning][index][3]}\n` 
+  for (let index = 0; index < allBatters[inning].length; index++) {
+    dataAsString += `${allBatters[inning][index]} - ${allBatterStats[inning][index][0]}(${allBatterStats[inning][index][1]})  ${strikeRate(allBatterStats[inning][index][0], allBatterStats[inning][index][1])} - ${allBatterStats[inning][index][2]} - ${allBatterStats[inning][index][3]}\n    `
   }
   return dataAsString;
 }
 
-function getBowlingDataInString(bowlers,allBowlerStats, inning) {
+function getBowlingDataInString(bowlers, allBowlerStats, inning) {
   let dataAsString = '';
-  for (let index = 0; index < bowlers.length; index++) {
-    dataAsString +=   `\t${bowlers[inning][index]} - ${allBowlerStats[inning][index][0]}.${allBowlerStats[inning][index][1]}-${allBowlerStats[inning][index][2]}-${allBowlerStats[inning][index][3]}\n`
+  for (let index = 0; index < bowlers[inning].length; index++) {
+    dataAsString += `${bowlers[inning][index]} - ${allBowlerStats[inning][index][0]}.${allBowlerStats[inning][index][1]}-${allBowlerStats[inning][index][2]}-${allBowlerStats[inning][index][3]}\n    `
   }
   return dataAsString;
 }
 
 function showFullScoreBoard(teams, result, score, allBatters, allBatterStats, bowlers, allBowlerStats, scoreByOver) {
   const msg = `
-      ${teams[0]} - ${score[0][0]}/${score[0][1]}       vs       ${teams[1]} - ${score[1][0]}/${score[1][1]}
-            ${result}
-  First Innings : 
-  Batting : 
+        ${teams[0]} - ${score[0][0]}/${score[0][1]}       vs       ${teams[1]} - ${score[1][0]}/${score[1][1]}
+              ${result}
+                      
+                        
+    First Innings : 
+    Batting : 
 
-  ${getBattingDataInString(allBatters, allBatterStats, 0)}
+    ${getBattingDataInString(allBatters, allBatterStats, 0)}
 
-  Bowling :
+    Bowling :
+ 
+    ${getBowlingDataInString(bowlers, allBowlerStats, 0)}
 
-  ${getBowlingDataInString(bowlers, allBowlerStats, 0)}
+${'-'.repeat(100)}
 
-  ${'-'.repeat(100)}
+    Second Innings :  
+    Batting : 
 
-  Second Innings :
-  Batting : 
+    ${getBattingDataInString(allBatters, allBatterStats, 1)}
 
-  ${getBattingDataInString(allBatters, allBatterStats, 1)}
+    Bowling :
 
-  Bowling :
-
-  ${getBowlingDataInString(bowlers, allBowlerStats, 1)}
-  `;
+    ${getBowlingDataInString(bowlers, allBowlerStats, 1)}
+    `;
 
   console.log(msg);
 }
 
+function takeOverInput() {
+  const overs = parseInt(prompt("Total overs  -  "));
+  if (!overs) {
+    console.log("Invalid overs");
+    return takeOverInput();
+  }
+  return overs;
+}
+
 function main(args) {
-  const MAX_OVER = parseInt(args[0]);
-  const teams = args.slice(1, 3);
-  const team1 = args[1];
-  const team2 = args[2];
-  console.log(team1, team2, MAX_OVER);
+  const team1 = prompt("Team Batting first  -  ");
+  const team2 = prompt("Team bowling first  -  ");
+  const teams = [team1, team2];
+
+  const maxOver = takeOverInput();
   const allBatterStats = [[], []];
   const allBatters = [[], []];
 
@@ -301,31 +320,31 @@ function main(args) {
   const currentBatters = [allBatters[strikerIndex], allBatters[nonStrikerindex]]
   const score = [[0, 0, 0, 0], [0, 0, 0, 0]];
   const scoreByOver = [[[]], [[]]];
-  let measage = createCommonMsg(MAX_OVER, teams, score, scoreByOver, allBatterStats, strikerIndex, nonStrikerindex, bowlers, currBowlerIndex, allBowlerStats, allBatters);
+  let measage = createCommonMsg(maxOver, teams, score, scoreByOver, allBatterStats, strikerIndex, nonStrikerindex, bowlers, currBowlerIndex, allBowlerStats, allBatters);
   console.log(measage);
-  while (score[inning][2] < MAX_OVER && score[inning][1] < 10) {
+  while (score[inning][2] < maxOver && score[inning][1] < 10) {
     startPlay(score, allBatterStats, strikerIndex, allBowlerStats, currBowlerIndex, scoreByOver, allBatters, currentBatters, bowlers);
     console.clear();
-    measage = createCommonMsg(MAX_OVER, teams, score, scoreByOver, allBatterStats, strikerIndex, nonStrikerindex, bowlers, currBowlerIndex, allBowlerStats, allBatters);
+    measage = createCommonMsg(maxOver, teams, score, scoreByOver, allBatterStats, strikerIndex, nonStrikerindex, bowlers, currBowlerIndex, allBowlerStats, allBatters);
     console.log(measage);
-    if (score[inning][3] === 0 && score[inning][2] !== MAX_OVER) {
+    if (score[inning][3] === 0 && score[inning][2] !== maxOver) {
       getNewBowler(bowlers, allBowlerStats);
     }
   }
 
   target = score[inning][0] + 1;
   console.clear();
-  InningBreakMeasage(team1, score[inning][0], score[inning][1], score[inning][2], score[inning][3], team2, MAX_OVER);
+  InningBreakMeasage(team1, score[inning][0], score[inning][1], score[inning][2], score[inning][3], team2, maxOver);
   isSecondInning = true;
   inning = 1;
   getStartingBattersAndBowlers(allBatterStats, allBowlerStats, bowlers, allBatters);
 
-  while (score[inning][2] < MAX_OVER && score[inning][1] < 10) {
+  while (score[inning][2] < maxOver && score[inning][1] < 10) {
     startPlay(score, allBatterStats, strikerIndex, allBowlerStats, currBowlerIndex, scoreByOver, allBatters, currentBatters, bowlers);
     console.clear();
-    measage = createCommonMsg(MAX_OVER, teams, score, scoreByOver, allBatterStats, strikerIndex, nonStrikerindex, bowlers, currBowlerIndex, allBowlerStats, allBatters);
+    measage = createCommonMsg(maxOver, teams, score, scoreByOver, allBatterStats, strikerIndex, nonStrikerindex, bowlers, currBowlerIndex, allBowlerStats, allBatters);
     console.log(measage);
-    if (score[inning][3] === 0 && score[inning][2] !== MAX_OVER) {
+    if (score[inning][3] === 0 && score[inning][2] !== maxOver) {
       getNewBowler(bowlers, allBowlerStats);
     }
 
@@ -334,7 +353,6 @@ function main(args) {
     }
   }
   const winnerTeam = score[0][0] > score[1][0] ? team1 : team2;
-  const losserTeam = score[0][0] > score[1][0] ? team2 : team1;
   const winningMargin = winnerTeam === team1 ? `${score[0][0] - score[1][0]} runs` : `${10 - score[1][1]} wickets`;
   const resultMsg = score[0][0] === score[1][0] ? 'Match tied' : `${winnerTeam} won the match by ${winningMargin}`;
   console.clear();
