@@ -1,6 +1,7 @@
 const GRID = makeGrid();
 
 const THINGS_UNDERNETH = makeGridOfZeros();
+const ALLREADY_REVEALED = []
 
 function makeGridOfZeros() {
   const rows = 10;
@@ -67,7 +68,7 @@ function getNumberEmoji(number) {
 function putAdjucentBombCountUnderneth() {
   for (let row = 0; row <= THINGS_UNDERNETH[row].length; row++) {
     for (let col = 0; col <= THINGS_UNDERNETH[col].length; col++) {
-      if (THINGS_UNDERNETH[row][col] !== '💣'){
+      if (THINGS_UNDERNETH[row][col] !== '💣') {
         THINGS_UNDERNETH[row][col] = getNumberEmoji(calculateAdjucentNumOfBombs(row, col)) + " ";
       }
     }
@@ -76,7 +77,7 @@ function putAdjucentBombCountUnderneth() {
 
 function valueOf(char) {
   const stringOfAlphabets = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
-  if (typeof char === 'number') {
+  if (typeof char === 'number') { 
     return stringOfAlphabets[char - 1];
   }
   return stringOfAlphabets.indexOf(char.toUpperCase());
@@ -92,7 +93,7 @@ function takeUserInput() {
   const validAlpha = 'abcdefghij'
   const userInput = prompt("Enter where you want to sweep");
   const sweepIndexs = turnUserInputToCordinate(userInput);
-  if (userInput.length !== 2 || !validAlpha.includes(userInput[0].toLowerCase())) {
+  if (userInput.length < 2 || userInput.length > 3 || userInput[2] > 0 || !validAlpha.includes(userInput[0].toLowerCase())) {
     console.log('Invalid Input');
     return takeUserInput();
   }
@@ -101,6 +102,7 @@ function takeUserInput() {
 
 function sweep(x, y) {
   GRID[x + 1][y + 1] = THINGS_UNDERNETH[x][y];
+  ALLREADY_REVEALED.push([x, y]);
   if (THINGS_UNDERNETH[x][y] === getNumberEmoji(0) + ' ') {
     revealAllAdjucentZeros(x, y);
   }
@@ -129,9 +131,21 @@ function revealAllAdjucentZeros(x, y) {
       if (X < 0 || Y < 0) {
         continue;
       }
-      
-      if (GRID[X+1][Y+1] === '⬜️'){
+      // console.log(GRID[X + 1][Y + 1])
+      console.log(X, Y);
+
+      if (GRID[X + 1][Y + 1] === '⬜️') {
         sweep(X, Y);
+      }
+    }
+  }
+}
+
+function revealAllBombs() {
+  for (let row = 0; row <= THINGS_UNDERNETH[row].length; row++) {
+    for (let col = 0; col <= THINGS_UNDERNETH[col].length; col++) {
+      if (THINGS_UNDERNETH[row][col] === '💣') {
+        GRID[row + 1][col + 1] = '💣';
       }
     }
   }
@@ -146,9 +160,13 @@ function main() {
     const sweepIndexs = takeUserInput();
     const sweepLocation = THINGS_UNDERNETH[sweepIndexs[0]][sweepIndexs[1]];
     sweep(sweepIndexs[0], sweepIndexs[1]);
+    console.clear();
     dispGrid();
     if (sweepLocation === '💣') {
+      console.clear();
       console.log('Boooom 💥\n You Lost');
+      revealAllBombs();
+      dispGrid();
       return;
     }
   }
