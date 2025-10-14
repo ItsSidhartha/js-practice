@@ -77,7 +77,7 @@ function putAdjucentBombCountUnderneth() {
 
 function valueOf(char) {
   const stringOfAlphabets = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
-  if (typeof char === 'number') { 
+  if (typeof char === 'number') {
     return stringOfAlphabets[char - 1];
   }
   return stringOfAlphabets.indexOf(char.toUpperCase());
@@ -128,11 +128,9 @@ function revealAllAdjucentZeros(x, y) {
       const X = x - 1 + col;
       const Y = y - 1 + row;
 
-      if (X < 0 || Y < 0) {
+      if (X < 0 || Y < 0 || (x === X && y === Y)) {
         continue;
       }
-      // console.log(GRID[X + 1][Y + 1])
-      console.log(X, Y);
 
       if (GRID[X + 1][Y + 1] === '⬜️') {
         sweep(X, Y);
@@ -171,4 +169,5 @@ function main() {
     }
   }
 }
+
 main();
