@@ -142,7 +142,7 @@ function main() {
   generateBomb();
   putAdjucentBombCountUnderneth();
 
-  while () {
+  while (true) {
     const sweepIndexs = takeUserInput();
     const sweepLocation = THINGS_UNDERNETH[sweepIndexs[0]][sweepIndexs[1]];
     sweep(sweepIndexs[0], sweepIndexs[1]);
