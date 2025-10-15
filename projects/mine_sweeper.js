@@ -1,14 +1,13 @@
 const GRID = makeGrid();
-
 const THINGS_UNDERNETH = makeGridOfZeros();
-const ALLREADY_REVEALED = []
+let SWEEP_COUNT = 0;
 
 function makeGridOfZeros() {
   const rows = 10;
   const cols = 10;
   const grid = [[]];
-  for (let row = 0; row <= rows; row++) {
-    for (let col = 0; col <= cols; col++) {
+  for (let row = 0; row < rows; row++) {
+    for (let col = 0; col < cols; col++) {
       grid[row].push(0);
     }
     grid.push([]);
@@ -93,6 +92,7 @@ function takeUserInput() {
   const validAlpha = 'abcdefghij'
   const userInput = prompt("Enter where you want to sweep");
   const sweepIndexs = turnUserInputToCordinate(userInput);
+
   if (userInput.length < 2 || userInput.length > 3 || userInput[2] > 0 || !validAlpha.includes(userInput[0].toLowerCase())) {
     console.log('Invalid Input');
     return takeUserInput();
@@ -102,7 +102,8 @@ function takeUserInput() {
 
 function sweep(x, y) {
   GRID[x + 1][y + 1] = THINGS_UNDERNETH[x][y];
-  ALLREADY_REVEALED.push([x, y]);
+  SWEEP_COUNT++;
+
   if (THINGS_UNDERNETH[x][y] === getNumberEmoji(0) + ' ') {
     revealAllAdjucentZeros(x, y);
   }
@@ -128,7 +129,7 @@ function revealAllAdjucentZeros(x, y) {
       const X = x - 1 + col;
       const Y = y - 1 + row;
 
-      if (X < 0 || Y < 0 || (x === X && y === Y)) {
+      if (X < 0 || Y < 0 || (x === X && y === Y) || X >= 10 || Y >= 10) {
         continue;
       }
 
@@ -149,12 +150,22 @@ function revealAllBombs() {
   }
 }
 
+function dispWinningMsg() {
+  const msg = `
+  Congratulation 🥳
+  You found all the mines
+  You Won!!
+  `
+
+  console.log(msg);
+}
+
 function main() {
-  dispGrid()
+  dispGrid();
   generateBomb();
   putAdjucentBombCountUnderneth();
 
-  while (true) {
+  while (SWEEP_COUNT < 85) {
     const sweepIndexs = takeUserInput();
     const sweepLocation = THINGS_UNDERNETH[sweepIndexs[0]][sweepIndexs[1]];
     sweep(sweepIndexs[0], sweepIndexs[1]);
@@ -168,6 +179,10 @@ function main() {
       return;
     }
   }
+  console.clear();
+  revealAllBombs();
+  dispGrid();
+  dispWinningMsg();
 }
 
 main();
