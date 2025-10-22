@@ -1,28 +1,6 @@
-const testCase1 = "LZ";
-const testCase2 = "Z  L";
-const testCase3 = "L     Z";
-const testCase4 = "L     L";
-const testCase5 = "Z  Z  Z";
-const testCase6 = "L  ZL Z";
-const testCase7 = "Z   LL Z";
-
-function savana(field) {
-  let minDistance = Infinity;
-
-  for (let currIndex = 0; currIndex < field.length; currIndex++) {
-    if (field[currIndex] !== ' ') {
-      const currAnimal = field[currIndex];
-      const targetAnimal = currAnimal === 'Z' ? 'L' : 'Z';
-      const indexOfClosestTarget = field.indexOf(targetAnimal, currIndex);
-      const targetIndex = indexOfClosestTarget === -1 ? Infinity : indexOfClosestTarget;
-      const distance = targetIndex - currIndex;
-      minDistance = Math.min(distance, minDistance);
-    }
-  }
-
-  return minDistance === Infinity ? -1 : minDistance;
+function somthing() {
+  return 0;
 }
-
 
 function validateOutput(actual, expected) {
   return actual === expected;
@@ -53,19 +31,15 @@ function composeMessage(inputs, actual, expected, testType) {
   return message;
 }
 
-function testSavana(inputs, expected, testType) {
-  const actual = savana(inputs);
+function testSomthing(inputs, expected, testType) {
+  const actual = somthing(inputs);
   console.log(composeMessage(inputs, actual, expected, testType));
 }
 
 function testAll() {
-  testSavana(testCase1, 1, "one of each animal");
-  testSavana(testCase2, 3, "seperated L and Z");
-  testSavana(testCase3, 6, "seperated Z and L");
-  testSavana(testCase4, -1, "only L");
-  testSavana(testCase5, -1, "only Z");
-  testSavana(testCase6, 1, "pair in the middle");
-  testSavana(testCase7, 2, "pair at the end");
+  testSomthing(0, 0, "when input is 0");
+  testSomthing(1, -1, "input is more than 0");
+  testSomthing(-1, 0, "input is negative");
 }
 
 testAll();
