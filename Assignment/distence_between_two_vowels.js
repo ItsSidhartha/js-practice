@@ -9,10 +9,6 @@ function isVowel(letter) {
   }
 }
 
-function min(a, b) {
-  return a < b ? a : b;
-}
-
 function distanceBetweenTwoVowels(string) {
   let currVowelIndex = -1;
   let nextVowelIndex = -1;
@@ -22,7 +18,7 @@ function distanceBetweenTwoVowels(string) {
     if (isVowel(string[stringIndex])) {
       currVowelIndex = nextVowelIndex; 
       nextVowelIndex = stringIndex;
-      minDistance = currVowelIndex === -1 ? minDistance : min(minDistance, nextVowelIndex - currVowelIndex);
+      minDistance = currVowelIndex === -1 ? minDistance : Math.min(minDistance, nextVowelIndex - currVowelIndex);
     }
   }
 
