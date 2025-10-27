@@ -1,9 +1,12 @@
 function encodeNumber(number) {
-  return 'i' + number + 'e';
+  const start = 'i';
+  const end = 'e';
+  return start + number + end;
 }
 
 function encodeString(string) {
-  return string.length + ":" + string;
+  const separator = ':';
+  return string.length + separator + string;
 }
 
 function encodeList(list) {
@@ -11,7 +14,10 @@ function encodeList(list) {
   for (let index = 0; index < list.length; index++) {
     encodedString = encodedString + encode(list[index]);
   }
-  return 'l' + encodedString + 'e';
+
+  const start = 'l';
+  const end = 'e';
+  return start + encodedString + end;
 }
 
 function encode(data) {
@@ -24,15 +30,15 @@ function encode(data) {
 }
 
 function decodeInteger(bencodedString) {
-  const start = bencodedString.indexOf('i') + 1;
-  const end = bencodedString.indexOf('e');
-  return parseInt(bencodedString.slice(start, end));
+  const startIndex = bencodedString.indexOf('i') + 1;
+  const endIndex = bencodedString.indexOf('e');
+  return parseInt(bencodedString.slice(startIndex, endIndex));
 }
 
 function decodeString(bencodedString) {
-  const start = bencodedString.indexOf(':') + 1;
-  const end = start + parseInt(bencodedString.slice(0, start - 1));
-  return bencodedString.slice(start, end);
+  const startIndex = bencodedString.indexOf(':') + 1;
+  const endIndex = startIndex + parseInt(bencodedString.slice(0, startIndex - 1));
+  return bencodedString.slice(startIndex, endIndex);
 }
 
 function calculateEndOfElement(string) {
@@ -41,9 +47,10 @@ function calculateEndOfElement(string) {
     case 'l' : return string.lastIndexOf('e');
   }
   
-  const start = string.indexOf(':') + 1;
-  const end = start + parseInt(string.slice(0, start - 1));
-  return end;
+  const startIndex = string.indexOf(':') + 1;
+  const length = parseInt(string.slice(0, startIndex - 1));
+  const endIndex = startIndex + length - 1;
+  return endIndex;
 }
 
 function decodeList(bencodedString) {
@@ -245,7 +252,7 @@ function allTestsOfDecoding() {
 }
 
 function main() {
-  allTestsOfEncoding();
+  // allTestsOfEncoding();
   allTestsOfDecoding();
 }
 
