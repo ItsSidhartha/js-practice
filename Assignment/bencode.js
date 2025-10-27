@@ -41,17 +41,31 @@ function decodeString(bencodedString) {
   return bencodedString.slice(startIndex, endIndex);
 }
 
-function calculateEndOfElement(string) {
-  switch(string[0]) {
-    case 'i' : return string.indexOf('e');
-    case 'l' : return string.lastIndexOf('e');
-  }
-  
+function endOfString(string) {
   const startIndex = string.indexOf(':') + 1;
   const length = parseInt(string.slice(0, startIndex - 1));
   const endIndex = startIndex + length - 1;
   return endIndex;
 }
+
+function endOfList(string) {
+  const endOfAnElement = calculateEndOfElement(string.slice(1)) + 1;
+  if (string[endOfAnElement + 1] === 'e') {
+    return endOfAnElement + 1;
+  }
+
+  return endOfAnElement + endOfList(string.slice(endOfAnElement));
+}
+
+function calculateEndOfElement(string) {
+  switch (string[0]) {
+    case 'i': return string.indexOf('e');
+    case 'l': return endOfList(string);
+  }
+
+  return endOfString(string);
+}
+
 
 function decodeList(bencodedString) {
   const startOfList = bencodedString.indexOf('l') + 1;
@@ -61,9 +75,9 @@ function decodeList(bencodedString) {
   let remainingString = bencodedString.slice(startOfList, endOfList);
 
   while (remainingString !== '') {
-    endOfElement = calculateEndOfElement(remainingString);
-    decodedList.push(decode(remainingString));
-    remainingString = remainingString.slice(endOfElement + 1, endOfList);
+  endOfElement = calculateEndOfElement(remainingString);
+  decodedList.push(decode(remainingString.slice(0,endOfElement + 1)));
+  remainingString = remainingString.slice(endOfElement + 1, endOfList);
   }
 
   return decodedList;
@@ -98,16 +112,16 @@ function areArraysEqual(array1, array2) {
   return true;
 }
 
-function areDeepEqual(array1, array2) {
-  if (typeof array1 !== typeof array2) {
+function areDeepEqual(value1, value2) {
+  if (typeof value1 !== typeof value2) {
     return false;
   }
 
-  if (isArray(array1) && isArray(array2)) {
-    return areArraysEqual(array1, array2);
+  if (isArray(value1) && isArray(value2)) {
+    return areArraysEqual(value1, value2);
   }
 
-  return array1 === array2;
+  return value1 === value2;
 }
 
 function composeMessageForSuccess(testType) {
@@ -125,7 +139,7 @@ function composeMessageForFail(inputs, testType, actual, expected) {
 function composeMessage(inputs, actual, expected, testType) {
   let message = "";
 
-  if (areArraysEqual(actual, expected)) {
+  if (areDeepEqual(actual, expected)) {
     message = composeMessageForSuccess(testType);
   } else {
     message = composeMessageForFail(inputs, testType, actual, expected);
@@ -185,39 +199,30 @@ function testEncode(data, expected, testType) {
 }
 
 function testAllEncodes() {
+  console.log("\nIntegers\n");
   testEncode(1, 'i1e', 'one digit integer');
   testEncode(12, 'i12e', 'two digit integer');
   testEncode(123, 'i123e', 'three digit integer');
+  console.log("-".repeat(100));
 
+  console.log("\nStrings\n");
   testEncode("", "0:", 'Empty String');
   testEncode("abc", "3:abc", 'String of alphabets');
   testEncode("@#$", "3:@#$", 'String of symbols');
   testEncode("abc@#$", "6:abc@#$", 'String of symbols and alphabets');
   testEncode("123", "3:123", 'String of numbers');
   testEncode("abc@#$123", "9:abc@#$123", 'String of symbols, alphabets and numbers');
+  console.log("-".repeat(100));
 
+  console.log("\nLists\n");
   testEncode([], 'le', 'Empty list');
   testEncode([1], 'li1ee', 'list of one number');
   testEncode(['a'], 'l1:ae', 'list of one string');
   testEncode([1, 2, 4], 'li1ei2ei4ee', 'list of multiple numbers');
   testEncode(['a', 'b', 'c'], 'l1:a1:b1:ce', 'list of multiple strings');
   testEncode(["apple", 123, ["banana", -5]], 'l5:applei123el6:bananai-5eee', 'nested list');
-}
-
-function allTestsOfEncoding() {
-  // console.log("\nIntegers\n");
-  // testAllIntegerEncodes();
-  // console.log("-".repeat(100));
-
-  // console.log("\nStrings\n");
-  // testAllStringEncodes();
-  // console.log("-".repeat(100));
-
-  // console.log("\nLists\n");
-  // testAllListDecodes();
-  // console.log("-".repeat(100));
-
-  testAllEncodes();
+  testEncode(["apple", 123, ["banana", -5], 123, "abc"], 'l5:applei123el6:bananai-5eei123e3:abce', 'nested list in the middle');
+  console.log("-".repeat(100));
 }
 
 function testDecode(bencodedString, expected, testType) {
@@ -227,10 +232,13 @@ function testDecode(bencodedString, expected, testType) {
 }
 
 function testAllDecodes() {
+  console.log("\nIntegers\n");
   testDecode('i1e', 1, 'one digit integer');
   testDecode('i12e', 12, 'two digit integer');
   testDecode('i123e', 123, 'three digit integer');
+  console.log("-".repeat(100));
 
+  console.log("\nStrings\n");
   testDecode("", "", 'Empty String');
   testDecode("0:", "", 'Empty String');
   testDecode("3:abc", "abc", 'String of alphabets');
@@ -238,22 +246,25 @@ function testAllDecodes() {
   testDecode("6:abc@#$", "abc@#$", 'String of symbols and alphabets');
   testDecode("3:123", "123", 'String of numbers');
   testDecode("9:abc@#$123", "abc@#$123", 'String of symbols, alphabets and numbers');
+  console.log("-".repeat(100));
 
+  console.log("\nLists\n");
   testDecode('le', [], 'Empty list');
   testDecode('li1ee', [1], 'list of one number');
   testDecode('l1:ae', ['a'], 'list of one string');
   testDecode('li1ei2ei4ee', [1, 2, 4], 'list of multiple numbers');
   testDecode('l1:a1:b1:ce', ['a', 'b', 'c'], 'list of multiple strings');
   testDecode('l5:applei123el6:bananai-5eee', ["apple", 123, ["banana", -5]], 'nested list');
+  testDecode('l5:applei123el6:bananai-5eei123e3:abce', ["apple", 123, ["banana", -5], 123, "abc"], 'nested list in the middle');
+  console.log("-".repeat(100));
 }
 
-function allTestsOfDecoding() {
-  testAllDecodes();
-}
 
 function main() {
-  // allTestsOfEncoding();
-  allTestsOfDecoding();
+  console.log("\nEncodes");
+  testAllEncodes();
+  console.log("\nDecodes");
+  testAllDecodes();
 }
 
 main();
