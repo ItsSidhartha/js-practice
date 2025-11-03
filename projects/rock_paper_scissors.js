@@ -29,9 +29,9 @@ function evaluateInputs(userInput, computerInput) {
 
 function convertNumericInputToSymbol(input) {
   switch (input) {
-    case 0: return '🪨'
-    case 1: return '📃'
-    case 2: return '✂️'
+    case 0: return '🪨';
+    case 1: return '📃';
+    case 2: return '✂️';
   }
 }
 
