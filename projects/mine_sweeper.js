@@ -1,13 +1,36 @@
-const GRID = makeGrid();
+const GAME_PARAMS = selectGameParameters();
+const ROWS = parseInt(GAME_PARAMS[0]) || 10;
+const COLS = parseInt(GAME_PARAMS[1]) || 10;
+const BOMBS_COUNT = parseInt(GAME_PARAMS[2]) || Math.floor(ROWS * COLS * 0.15);
+
+const MINE_FIELD = prepareEmptyField();
 const THINGS_UNDERNETH = makeGridOfZeros();
 let SWEEP_COUNT = 0;
 
+function selectGameParameters() {
+  const dificulty = prompt(`Select Dificulty (3 for hard, 2 for Medium,1 for Easy, '999' for impossible,
+for custom parameters enter rows(max 26), colums(max 99), number of mines you want with dash(- in between))`);
+
+  if (dificulty.includes('-')) {
+    return dificulty.split('-');
+  }
+
+  switch (dificulty) {
+    case "3": return [15, 15];
+    case "2": return [10, 10];
+    case "1": return [5, 5];
+    case "999": return [10, 10, 40];
+  }
+
+  console.log("Invalid Input");
+  return selectGameParameters();
+}
+
+
 function makeGridOfZeros() {
-  const rows = 10;
-  const cols = 10;
   const grid = [[]];
-  for (let row = 0; row < rows; row++) {
-    for (let col = 0; col < cols; col++) {
+  for (let row = 0; row < ROWS; row++) {
+    for (let col = 0; col < COLS; col++) {
       grid[row].push(0);
     }
     grid.push([]);
@@ -15,43 +38,56 @@ function makeGridOfZeros() {
   return grid;
 }
 
-function makeGrid() {
-  const rows = 10;
-  const cols = 10;
-  const grid = [[`\t  `, ' 1', ' 2', ' 3', ' 4', ' 5', ' 6', ' 7', ' 8', ' 9', ' 10']];
+function prepareEmptyField() {
+  const grid = [['\t  ']];
 
-  for (let row = 1; row <= rows; row++) {
+  for (let index = 1; index <= COLS; index++) {
+    grid[0].push(' ' + index);
+  }
+
+  for (let row = 1; row <= ROWS; row++) {
     grid.push([`\t ${valueOf(row)} `]);
-    for (let col = 0; col < cols; col++) {
+    for (let col = 1; col <= COLS; col++) {
       grid[row].push('⬜️');
     }
   }
   return grid;
 }
 
-function generateNumber() {
-  return Math.floor(Math.random() * 10);
+function generateNumberInRange(range) {
+  return Math.floor(Math.random() * range);
+}
+
+function randomCordinate() {
+  const cordinates = [generateNumberInRange(ROWS), generateNumberInRange(COLS)];
+  const isUsed = THINGS_UNDERNETH[cordinates[0]][cordinates[1]] === '💣';
+
+  if (isUsed) {
+    return randomCordinate();
+  }
+
+  return cordinates;
 }
 
 function generateBomb() {
-  const numberOfBombs = 15;
-  for (let index = 0; index < numberOfBombs; index++) {
-    THINGS_UNDERNETH[generateNumber()][generateNumber()] = '💣';
+  for (let index = 0; index < BOMBS_COUNT; index++) {
+    const cordinates = randomCordinate();
+    THINGS_UNDERNETH[cordinates[0]][cordinates[1]] = '💣';
   }
 }
 
-function calculateAdjucentNumOfBombs(x, y) {
+function isBomb(x, y) {
+  return THINGS_UNDERNETH[x][y] === '💣';
+}
+
+function calculateNumOfBombsNearby(x, y) {
   let count = 0;
   for (let row = 0; row < 3; row++) {
     for (let col = 0; col < 3; col++) {
       const X = x - 1 + col;
       const Y = y - 1 + row;
 
-      if (X < 0 || Y < 0) {
-        continue;
-      }
-
-      if (THINGS_UNDERNETH[X][Y] === '💣') {
+      if (isInRange(X, 0, ROWS) && isInRange(Y, 0, ROWS) && isBomb(X, Y)) {
         count++;
       }
     }
@@ -67,8 +103,8 @@ function getNumberEmoji(number) {
 function putAdjucentBombCountUnderneth() {
   for (let row = 0; row <= THINGS_UNDERNETH[row].length; row++) {
     for (let col = 0; col <= THINGS_UNDERNETH[col].length; col++) {
-      if (THINGS_UNDERNETH[row][col] !== '💣') {
-        THINGS_UNDERNETH[row][col] = getNumberEmoji(calculateAdjucentNumOfBombs(row, col)) + " ";
+      if (!isBomb(row, col)) {
+        THINGS_UNDERNETH[row][col] = getNumberEmoji(calculateNumOfBombsNearby(row, col)) + " ";
       }
     }
   }
@@ -79,7 +115,7 @@ function valueOf(char) {
   if (typeof char === 'number') {
     return stringOfAlphabets[char - 1];
   }
-  return stringOfAlphabets.indexOf(char.toUpperCase());
+  return stringOfAlphabets.indexOf(char);
 }
 
 function turnUserInputToCordinate(userInput) {
@@ -88,39 +124,77 @@ function turnUserInputToCordinate(userInput) {
   return [x, y];
 }
 
-function takeUserInput() {
-  const validAlpha = 'abcdefghij'
-  const userInput = prompt("Enter where you want to sweep");
-  const sweepIndexs = turnUserInputToCordinate(userInput);
+function validateInput(userInput) {
+  const alphabets = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+  const isValidLength = userInput.length === 2 || userInput.length === 3;
+  const alphabetFragment = userInput[0];
+  const isValidAlphabet = alphabets.slice(0, ROWS).includes(alphabetFragment);
+  const numberFragment = userInput.slice(1);
+  const isValidNumber = parseInt(numberFragment) > 0 && parseInt(numberFragment) <= 10;
+  return isValidLength && isValidAlphabet && isValidNumber;
+}
 
-  if (userInput.length < 2 || userInput.length > 3 || userInput[2] > 0 || !validAlpha.includes(userInput[0].toLowerCase())) {
-    console.log('Invalid Input');
+function flag(location) {
+  const row = location[0];
+  const col = location[1];
+  if (isNotSwept(row, col)) {
+    MINE_FIELD[row + 1][col + 1] = '🚩';
+    console.clear();
+    dispGrid();
+  }
+}
+
+function takeUserInput() {
+  const promtMsg = `
+  Enter where you want to sweep as 'A1', 'j10' format, 
+  or type '-f ' at the start to put a flag at the square`;
+
+  const userInput = prompt(promtMsg).toUpperCase();
+  const flagIdentifier = '-F '
+  const isFlag = userInput.includes(flagIdentifier);
+
+  if (isFlag && validateInput(userInput.slice(flagIdentifier.length))) {
+    const flagLocation = turnUserInputToCordinate(userInput.slice(flagIdentifier.length));
+    flag(flagLocation);
     return takeUserInput();
   }
-  return sweepIndexs;
+
+  const isValidInput = validateInput(userInput);
+
+  if (isValidInput) {
+    const sweepIndexs = turnUserInputToCordinate(userInput);
+    return sweepIndexs;
+  }
+
+  console.log('\n\tInvalid Input');
+  return takeUserInput();
+}
+
+function isNotSwept(x, y) {
+  const content = MINE_FIELD[x + 1][y + 1];
+  return content === '⬜️' || content === '🚩';
 }
 
 function sweep(x, y) {
-  GRID[x + 1][y + 1] = THINGS_UNDERNETH[x][y];
-  SWEEP_COUNT++;
-
+  if (isNotSwept(x, y)) {
+    MINE_FIELD[x + 1][y + 1] = THINGS_UNDERNETH[x][y];
+    SWEEP_COUNT++;
+  }
   if (THINGS_UNDERNETH[x][y] === getNumberEmoji(0) + ' ') {
     revealAllAdjucentZeros(x, y);
   }
 }
 
-function giveSweepFeedBack() {
-  if (sweepLocation === '💣') {
-    console.log('Boooom 💥\n You Lost');
-  }
-}
-
 function dispGrid() {
   const joinedGrid = [];
-  for (let index = 0; index < GRID.length; index++) {
-    joinedGrid.push(GRID[index].join(''))
+  for (let index = 0; index < MINE_FIELD.length; index++) {
+    joinedGrid.push(MINE_FIELD[index].join(''))
   }
   console.log(joinedGrid.join('\n'));
+}
+
+function isInRange(term, start, end) {
+  return term >= start && term < end;
 }
 
 function revealAllAdjucentZeros(x, y) {
@@ -129,11 +203,7 @@ function revealAllAdjucentZeros(x, y) {
       const X = x - 1 + col;
       const Y = y - 1 + row;
 
-      if (X < 0 || Y < 0 || (x === X && y === Y) || X >= 10 || Y >= 10) {
-        continue;
-      }
-
-      if (GRID[X + 1][Y + 1] === '⬜️') {
+      if (isInRange(X, 0, ROWS) && isInRange(Y, 0, ROWS) && isNotSwept(X, Y)) {
         sweep(X, Y);
       }
     }
@@ -141,10 +211,10 @@ function revealAllAdjucentZeros(x, y) {
 }
 
 function revealAllBombs() {
-  for (let row = 0; row <= THINGS_UNDERNETH[row].length; row++) {
-    for (let col = 0; col <= THINGS_UNDERNETH[col].length; col++) {
+  for (let row = 0; row < ROWS; row++) {
+    for (let col = 0; col < COLS; col++) {
       if (THINGS_UNDERNETH[row][col] === '💣') {
-        GRID[row + 1][col + 1] = '💣';
+        MINE_FIELD[row + 1][col + 1] = '💣';
       }
     }
   }
@@ -160,23 +230,49 @@ function dispWinningMsg() {
   console.log(msg);
 }
 
+function validatePasskey() {
+  const enteredPaskey = prompt('Enter password');
+  const password = 'hamba ramba hamba hamba'
+  SWEEP_COUNT--;
+  return enteredPaskey === password;
+}
+
+function takePayment() {
+  console.log('Pay 20 rupees to continue');
+  const isClaimingPaid = confirm('Is paid?');
+  if (isClaimingPaid) {
+    return validatePasskey();
+  }
+  return false;
+}
+
+function dispLossingMsg() {
+  console.clear();
+  revealAllBombs();
+  dispGrid();
+  console.log('\n\tBoooom 💥\n\tYou Lost');
+  return;
+}
+
 function main() {
   dispGrid();
   generateBomb();
   putAdjucentBombCountUnderneth();
 
-  while (SWEEP_COUNT < 85) {
+  const safeSpaceCount = (ROWS * COLS) - BOMBS_COUNT;
+
+  while (SWEEP_COUNT < safeSpaceCount) {
     const sweepIndexs = takeUserInput();
-    const sweepLocation = THINGS_UNDERNETH[sweepIndexs[0]][sweepIndexs[1]];
     sweep(sweepIndexs[0], sweepIndexs[1]);
     console.clear();
     dispGrid();
-    if (sweepLocation === '💣') {
-      console.clear();
-      console.log('Boooom 💥\n You Lost');
-      revealAllBombs();
-      dispGrid();
-      return;
+    if (isBomb(sweepIndexs[0], sweepIndexs[1])) {
+      const isPlayAgain = confirm('Want to continue playing');
+
+      if (!isPlayAgain || !takePayment()) {
+        dispLossingMsg();
+        return;
+      }
     }
   }
   console.clear();
