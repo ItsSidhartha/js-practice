@@ -4,4 +4,7 @@ function* consecutivePairs(numbers) {
     yield [numbers[i++], numbers[i]];
   }
 }
-const x = consecutivePairs([1, 2, 3, 4, 5]);
+
+const pairs = (numbers) => [...consecutivePairs(numbers)];
+
+console.log(pairs([1, 2, 3, 4, 5]));
